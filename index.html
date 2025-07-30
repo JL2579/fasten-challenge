@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fasten-Challenge Countdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.7/dist/index.umd.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #111827; /* Fallback-Farbe */
+            /* --- NEUER HINTERGRUND --- */
+            background-image: url('https://chatgpt.com/backend-api/public_content/enc/eyJpZCI6Im1fNjg4YTRmZDY2YmJjODE5MTk4MzNjZjc2NzA5NTc0ZjQ6ZmlsZV8wMDAwMDAwMDIxYjQ2MjQ2YmIzNzVlNGVhYTUyNzJmMyIsInRzIjoiNDg3MTkzIiwicCI6InB5aSIsInNpZyI6IjM3OGMwNDQ0YTM2Y2MyYzgwMjQxM2E5ODU0MWJmMDVlN2UwNDM4Y2VlMzU0ODJmNDU2NDljYTk2OWIyNWNmZmUiLCJ2IjoiMCIsImdpem1vX2lkIjpudWxsfQ==');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+            overflow: hidden; /* Verhindert Scrollbalken */
+        }
+        .overlay {
+            background-color: rgba(17, 24, 39, 0.5); /* Leichte Anpassung für Lesbarkeit */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .content {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+        }
+        #countdown {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem; /* 48px */
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        @media (min-width: 768px) {
+            #countdown {
+                font-size: 6rem; /* 96px */
+            }
+        }
+        #milestone {
+            min-height: 60px;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fireworks-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .button-container {
+            position: relative;
+            z-index: 4; /* Stellt sicher, dass Buttons über dem Feuerwerk klickbar sind */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <canvas class="fireworks-canvas"></canvas>
+
+    <div class="content">
+        <p class="text-lg md:text-xl text-gray-300 mb-8 mt-8">Verbleibende Zeit bis zum Ziel:</p>
+
+        <div id="countdown" class="mb-8">
+            <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+        </div>
+
+        <div id="milestone" class="p-4 bg-black bg-opacity-30 rounded-lg shadow-lg mb-8 max-w-md mx-auto">
+            <p id="milestone-text" class="text-lg md:text-xl italic text-teal-300"></p>
+        </div>
+
+        <div class="button-container">
+            <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 w-64">
+                Ich bin schwach geworden
+            </button>
+            <!-- Test Buttons -->
+       
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURATION ---
+        const challengeDurationHours = 120; // 5 Tage * 24 Stunden
+        const initialStartDate = new Date('2025-07-28T18:00:00');
+
+        const milestones = {
+            12: "12 Stunden geschafft! Dein Körper schaltet auf Autopilot. Du bist stärker als dein Magenknurren!",
+            24: "24 Stunden-Marke geknackt! Willkommen in der Ketose-Zone. Dein Körper wird zur Fettverbrennungs-Maschine.",
+            36: "36 Stunden! Dein Geist wird klarer als das Wasser, das du trinkst. Denk an die Pizza, die du dir verdient hast... später!",
+            48: "Zwei Tage im Kasten! Du könntest jetzt einen Bären mit reiner Willenskraft umwerfen. (Bitte nicht versuchen).",
+            60: "HALBZEIT! Du bist offiziell ein halber Superheld. Deine Superkraft: Dem Kühlschrank widerstehen.",
+            72: "72 Stunden! Die Autophagie-Party ist in vollem Gange. Deine Zellen recyceln sich selbst. Du bist quasi brandneu!",
+            84: "84 Stunden. Du strahlst mehr Energie aus als ein kleines Kraftwerk. Pass auf, dass du nicht abhebst!",
+            96: "Fast am Ziel! Nur noch 24 Stunden. Der Endspurt! Du riechst das Ziel... und es riecht nicht nach Essen!",
+            108: "108 Stunden! Der Mount Everest des Fastens ist fast bezwungen. Der Gipfel ist in Sicht!",
+            120: "GESCHAFFT! 120 Stunden pure Willenskraft! Du bist eine Legende! Zeit zu feiern!"
+        };
+
+        // --- DOM-ELEMENTE ---
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const milestoneTextEl = document.getElementById('milestone-text');
+        const resetButton = document.getElementById('resetButton');
+        const fireworksCanvas = document.querySelector('.fireworks-canvas');
+        //const testFireworksButton = document.getElementById('testFireworksButton');
+        //const stopFireworksButton = document.getElementById('stopFireworksButton');
+
+
+        // --- VARIABLEN ---
+        let countdownInterval;
+        let endDate;
+        let fireworks;
+
+        // --- FUNKTIONEN ---
+        function startCountdown(startDate) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (fireworks) fireworks.stop();
+            
+            endDate = new Date(startDate.getTime() + challengeDurationHours * 60 * 60 * 1000);
+
+            countdownInterval = setInterval(() => updateCountdown(startDate), 1000);
+            updateCountdown(startDate);
+        }
+
+        function updateCountdown(startDate) {
+            const now = new Date();
+            const timeLeft = endDate.getTime() - now.getTime();
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
+                milestoneTextEl.textContent = milestones[120];
+                launchFireworks();
+                return;
+            }
+
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            hoursEl.textContent = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+
+            checkMilestones(startDate);
+        }
+
+        function checkMilestones(startDate) {
+            const now = new Date();
+            const hoursPassed = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+            
+            let latestMilestone = "";
+            for (const hour in milestones) {
+                if (hoursPassed >= hour) {
+                     latestMilestone = milestones[hour];
+                }
+            }
+
+            if (milestoneTextEl.textContent !== latestMilestone) {
+                 milestoneTextEl.parentElement.style.opacity = 0;
+                 setTimeout(() => {
+                    milestoneTextEl.textContent = latestMilestone;
+                    milestoneTextEl.parentElement.style.opacity = 1;
+                 }, 500);
+            }
+        }
+
+        function launchFireworks() {
+            // FIX: The library exposes the constructor on the `Fireworks` property of the global object.
+            if (!fireworks && window.Fireworks) {
+                fireworks = new window.Fireworks.Fireworks(fireworksCanvas, {
+                    autoresize: true,
+                    opacity: 0.5,
+                    acceleration: 1.02,
+                    friction: 0.97,
+                    gravity: 1.5,
+                    particles: 175,
+                    traceSpeed: 3,
+                    explosion: 5,
+                    intensity: 70,
+                    flickering: 50,
+                    lineStyle: 'round',
+                    hue: { min: 0, max: 360 },
+                    delay: { min: 30, max: 60 },
+                    rocketsPoint: { min: 50, max: 50 },
+                    lineWidth: { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } },
+                    brightness: { min: 50, max: 80 },
+                    decay: { min: 0.015, max: 0.03 },
+                    mouse: { click: false, move: false, max: 1 }
+                });
+            }
+            if(fireworks) {
+                fireworks.start();
+            }
+        }
+
+        function stopFireworks() {
+            if (fireworks) {
+                fireworks.stop();
+            }
+        }
+
+        // --- EVENT LISTENER ---
+        resetButton.addEventListener('click', () => {
+            const newStartDate = new Date();
+            startCountdown(newStartDate);
+            // Anstelle von alert() könnte man eine schönere Modal-Box bauen.
+            // Für die Einfachheit belassen wir es bei alert().
+            alert("Der Countdown wurde zurückgesetzt. Die 120 Stunden beginnen jetzt von Neuem. Auf ein Neues!");
+        });
+
+        //testFireworksButton.addEventListener('click', launchFireworks);
+        //stopFireworksButton.addEventListener('click', stopFireworks);
+
+
+        // --- INITIALISIERUNG ---
+        startCountdown(initialStartDate);
+
+    </script>
+</body>
+</html>
