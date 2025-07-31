@@ -13,33 +13,40 @@
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #111827; /* Fallback-Farbe */
-            background-image: url('default.png'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            color: white;
+            text-align: center;
+            overflow: hidden; /* Verhindert Scrollbalken am Body */
+        }
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow-x: auto; /* Ermöglicht horizontales Scrollen */
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch; /* Für flüssiges Scrollen auf iOS */
+        }
+        #bgImage {
+            height: 100vh; /* Bild füllt die Höhe des Bildschirms */
+            width: auto;   /* Breite passt sich proportional an */
+            min-width: 100vw; /* Stellt sicher, dass das Bild mindestens so breit wie der Bildschirm ist */
+            transition: opacity 0.5s ease-in-out;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: white;
-            text-align: center;
-            overflow: hidden; /* Verhindert Scrollbalken */
-            transition: background-image 0.5s ease-in-out; /* Sanfter Übergang für Bildwechsel */
-        }
-        .overlay {
-            background-color: rgba(17, 24, 39, 0.25);
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 1;
+            padding: 1rem;
         }
         .content {
-            position: relative;
-            z-index: 2;
-            padding: 2rem;
             width: 100%;
+            max-width: 640px; /* Maximale Breite für den Inhalt */
         }
         #countdown {
             font-family: 'Orbitron', sans-serif;
@@ -60,7 +67,7 @@
             justify-content: center;
         }
         .fireworks-canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -83,7 +90,9 @@
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
+    <div class="background-container">
+        <img id="bgImage" src="default.png" alt="Hintergrundbild">
+    </div>
     <canvas class="fireworks-canvas"></canvas>
 
     <!-- Zurück-Button (Browser-Navigation) -->
@@ -91,41 +100,38 @@
         &larr; Zurück
     </a>
 
-    <div class="content">
-       <h1 class="text-3xl md:text-5xl text-white tracking-wider mb-12">
-            Arthurs <br> 
-            <span class="font-extrabold">5 Tages</span> <br> 
-            Fasten-Challenge
-        </h1>
-        <p class="text-lg md:text-xl text-gray-300 mb-4">Verbleibende Zeit bis zum Ziel:</p>
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="p-4 bg-black bg-opacity-40 rounded-lg shadow-lg mb-4">
+                <h1 class="text-3xl md:text-5xl text-white tracking-wider leading-tight">
+                    Arthurs <br> 
+                    <span class="font-extrabold text-4xl md:text-7xl">5 Tages</span> <br> 
+                    Fasten-Challenge
+                </h1>
+            </div>
+            
+            <div class="p-4 bg-black bg-opacity-40 rounded-lg shadow-lg mb-4">
+                <p class="text-lg md:text-xl text-gray-300 mb-2">Verbleibende Zeit bis zum Ziel:</p>
+                <div id="countdown">
+                    <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+                </div>
+            </div>
 
-        <div id="countdown" class="mb-4">
-            <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
-        </div>
+            <!-- Milestone Navigation -->
+            <div class="flex justify-center items-center gap-4 mb-4">
+                <button id="prevMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">&lt; Spruch zurück</button>
+                <button id="nextMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">Spruch vor &gt;</button>
+            </div>
 
-        <!-- Milestone Navigation -->
-        <div class="flex justify-center items-center gap-4 mb-4">
-            <button id="prevMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">&lt; Spruch zurück</button>
-            <button id="nextMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">Spruch vor &gt;</button>
-        </div>
+            <div id="milestone" class="p-4 bg-black bg-opacity-40 rounded-lg shadow-lg mb-8 max-w-lg mx-auto">
+                <p id="milestone-text" class="text-lg md:text-xl italic text-teal-300"></p>
+            </div>
 
-        <div id="milestone" class="p-4 bg-black bg-opacity-40 rounded-lg shadow-lg mb-8 max-w-lg mx-auto">
-            <p id="milestone-text" class="text-lg md:text-xl italic text-teal-300"></p>
-        </div>
-
-        <div class="button-container">
-            <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 w-64">
-                Ich bin schwach geworden!
-            </button>
-            <!-- Test Buttons (können später entfernt werden) -->
-            <!--<div class="flex gap-4 mt-4">
-                 <button id="testFireworksButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
-                    Feuerwerk testen
+            <div class="button-container">
+                <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 w-64">
+                    Ich bin schwach geworden!
                 </button>
-                <button id="stopFireworksButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
-                    Feuerwerk stoppen
-                </button>
-            </div>-->
+            </div>
         </div>
     </div>
 
@@ -265,9 +271,7 @@
         const milestoneTextEl = document.getElementById('milestone-text');
         const resetButton = document.getElementById('resetButton');
         const fireworksCanvas = document.querySelector('.fireworks-canvas');
-        //const testFireworksButton = document.getElementById('testFireworksButton');
-        //const stopFireworksButton = document.getElementById('stopFireworksButton');
-        const bodyEl = document.body;
+        const bgImageEl = document.getElementById('bgImage');
         const prevMilestoneButton = document.getElementById('prevMilestoneButton');
         const nextMilestoneButton = document.getElementById('nextMilestoneButton');
 
@@ -285,15 +289,14 @@
             
             endDate = new Date(startDate.getTime() + challengeDurationHours * 60 * 60 * 1000);
 
-            // Initialen Zustand setzen
             const initialHoursPassed = Math.floor((new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60));
-            currentMaxHour = Math.max(0, initialHoursPassed); // Sicherstellen, dass es nicht negativ ist
+            currentMaxHour = Math.max(0, initialHoursPassed);
             manualViewHour = currentMaxHour;
 
             updateDisplayForHour(manualViewHour);
             
             countdownInterval = setInterval(() => updateCountdown(startDate), 1000);
-            updateCountdown(startDate); // Sofortiger erster Aufruf für den Timer
+            updateCountdown(startDate);
         }
 
         function updateCountdown(startDate) {
@@ -310,7 +313,6 @@
                 return;
             }
 
-            // Timer aktualisieren
             const hours = Math.floor(timeLeft / (1000 * 60 * 60));
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
@@ -318,23 +320,19 @@
             minutesEl.textContent = String(minutes).padStart(2, '0');
             secondsEl.textContent = String(seconds).padStart(2, '0');
 
-            // Maximale erreichbare Stunde aktualisieren
             const newMaxHour = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60));
             if (newMaxHour > currentMaxHour) {
                 currentMaxHour = newMaxHour;
-                // Wenn der Benutzer live schaut, automatisch aktualisieren
                 if (manualViewHour === currentMaxHour - 1) {
                     manualViewHour = currentMaxHour;
                     updateDisplayForHour(manualViewHour);
                 } else {
-                    // Nur die Button-Zustände aktualisieren
                     updateButtonStates();
                 }
             }
         }
 
         function updateDisplayForHour(hourToShow) {
-            // Meilenstein-Text aktualisieren
             let milestoneText = milestones[hourToShow] || "Der Weg ist das Ziel...";
             if (milestoneTextEl.textContent !== milestoneText) {
                  milestoneTextEl.parentElement.style.opacity = 0;
@@ -344,11 +342,10 @@
                  }, 300);
             }
 
-            // Hintergrundbild aktualisieren
             const newBgUrl = `hour_${hourToShow}.png`;
             const img = new Image();
-            img.onload = () => { bodyEl.style.backgroundImage = `url('${newBgUrl}')`; };
-            img.onerror = () => { bodyEl.style.backgroundImage = `url('${defaultBackground}')`; };
+            img.onload = () => { bgImageEl.src = newBgUrl; };
+            img.onerror = () => { bgImageEl.src = defaultBackground; };
             img.src = newBgUrl;
 
             updateButtonStates();
@@ -392,9 +389,6 @@
                 updateDisplayForHour(manualViewHour);
             }
         });
-
-        // testFireworksButton.addEventListener('click', launchFireworks);
-        // stopFireworksButton.addEventListener('click', stopFireworks);
 
         // --- INITIALISIERUNG ---
         startCountdown(initialStartDate);
