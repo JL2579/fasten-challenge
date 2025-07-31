@@ -15,7 +15,7 @@
             background-color: #111827; /* Fallback-Farbe */
             color: white;
             text-align: center;
-            /* WICHTIG: overflow wird jetzt vom Container gesteuert, nicht vom body */
+            overflow: hidden; /* Verhindert Scrollen am Body selbst */
         }
         .background-container {
             position: fixed;
@@ -24,17 +24,11 @@
             width: 100vw;
             height: 100vh;
             z-index: 0;
-            overflow: auto; /* ÄNDERUNG: Ermöglicht Scrollen in beide Richtungen */
+            overflow: auto; /* Ermöglicht Scrollen in beide Richtungen */
             -webkit-overflow-scrolling: touch; /* Für flüssiges Scrollen auf iOS */
-            display: flex; /* Hilft bei der Zentrierung, falls das Bild kleiner als der Viewport ist */
         }
         #bgImage {
-            /* ÄNDERUNG: Diese Logik stellt sicher, dass das Bild den Viewport immer abdeckt (wie background-size: cover) */
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            margin: auto; /* Zentriert das Bild im Flex-Container */
+            /* Die Größe wird jetzt vollständig von JavaScript gesteuert, um Verzerrungen zu vermeiden */
             transition: opacity 0.5s ease-in-out;
         }
         .content-wrapper {
@@ -413,6 +407,8 @@
                 updateDisplayForHour(manualViewHour);
             }
         });
+
+        window.addEventListener('resize', centerBackgroundImage);
 
         // --- INITIALISIERUNG ---
         startCountdown(initialStartDate);
