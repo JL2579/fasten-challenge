@@ -31,6 +31,7 @@
         #bgImage {
             height: 100vh; /* Bild füllt die Höhe des Bildschirms */
             width: auto;   /* Breite passt sich proportional an */
+            max-width: none; /* WICHTIG: Verhindert, dass das Bild gestaucht wird */
             min-width: 100vw; /* Stellt sicher, dass das Bild mindestens so breit wie der Bildschirm ist */
             transition: opacity 0.5s ease-in-out;
         }
