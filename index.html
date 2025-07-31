@@ -29,6 +29,7 @@
         }
         #bgImage {
             /* Die Größe wird jetzt vollständig von JavaScript gesteuert, um Verzerrungen zu vermeiden */
+            position: absolute; /* Notwendig für JS-Positionierung */
             transition: opacity 0.5s ease-in-out;
         }
         .content-wrapper {
@@ -334,13 +335,29 @@
             }
         }
 
-        function centerBackgroundImage() {
+        function sizeAndCenterBackground() {
+            const image = bgImageEl;
+            const container = backgroundContainer;
+
+            const containerRatio = container.clientWidth / container.clientHeight;
+            const imageRatio = image.naturalWidth / image.naturalHeight;
+
+            if (containerRatio > imageRatio) {
+                // Container ist breiter als das Bild -> Höhe anpassen
+                image.style.width = '100vw';
+                image.style.height = 'auto';
+            } else {
+                // Container ist höher als das Bild -> Breite anpassen
+                image.style.height = '100vh';
+                image.style.width = 'auto';
+            }
+
             // Kurze Verzögerung, um sicherzustellen, dass das Rendering abgeschlossen ist
             setTimeout(() => {
-                const scrollLeftPos = (backgroundContainer.scrollWidth - backgroundContainer.clientWidth) / 2;
-                const scrollTopPos = (backgroundContainer.scrollHeight - backgroundContainer.clientHeight) / 2;
-                backgroundContainer.scrollLeft = scrollLeftPos;
-                backgroundContainer.scrollTop = scrollTopPos;
+                const scrollLeftPos = (container.scrollWidth - container.clientWidth) / 2;
+                const scrollTopPos = (container.scrollHeight - container.clientHeight) / 2;
+                container.scrollLeft = scrollLeftPos;
+                container.scrollTop = scrollTopPos;
             }, 50);
         }
 
@@ -358,11 +375,11 @@
             const img = new Image();
             img.onload = () => { 
                 bgImageEl.src = newBgUrl;
-                centerBackgroundImage();
+                sizeAndCenterBackground();
             };
             img.onerror = () => { 
                 bgImageEl.src = defaultBackground;
-                centerBackgroundImage();
+                sizeAndCenterBackground();
             };
             img.src = newBgUrl;
 
@@ -408,7 +425,7 @@
             }
         });
 
-        window.addEventListener('resize', centerBackgroundImage);
+        window.addEventListener('resize', sizeAndCenterBackground);
 
         // --- INITIALISIERUNG ---
         startCountdown(initialStartDate);
