@@ -50,18 +50,18 @@
         }
         .content {
             width: 100%;
-            max-width: 640px; /* Maximale Breite für den Inhalt */
+            max-width: 512px; /* Maximale Breite für den Inhalt */
             pointer-events: auto; /* ÄNDERUNG: Macht den Inhaltsblock wieder klickbar */
         }
         #countdown {
             font-family: 'Orbitron', sans-serif;
-            font-size: 3rem; /* 48px */
+            font-size: 2.4rem; /* ÄNDERUNG: Verkleinert (war 3rem) */
             letter-spacing: 0.1em;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
         }
         @media (min-width: 768px) {
             #countdown {
-                font-size: 6rem; /* 96px */
+                font-size: 4.8rem; /* ÄNDERUNG: Verkleinert (war 6rem) */
             }
         }
         #milestone {
@@ -279,6 +279,7 @@
         const bgImageEl = document.getElementById('bgImage');
         const prevMilestoneButton = document.getElementById('prevMilestoneButton');
         const nextMilestoneButton = document.getElementById('nextMilestoneButton');
+        const backgroundContainer = document.querySelector('.background-container');
 
         // --- VARIABLEN ---
         let countdownInterval;
@@ -337,6 +338,14 @@
             }
         }
 
+        function centerBackgroundImage() {
+            // Kurze Verzögerung, um sicherzustellen, dass das Rendering abgeschlossen ist
+            setTimeout(() => {
+                const scrollPos = (bgImageEl.scrollWidth - backgroundContainer.clientWidth) / 2;
+                backgroundContainer.scrollLeft = scrollPos;
+            }, 50);
+        }
+
         function updateDisplayForHour(hourToShow) {
             let milestoneText = milestones[hourToShow] || "Der Weg ist das Ziel...";
             if (milestoneTextEl.textContent !== milestoneText) {
@@ -349,8 +358,14 @@
 
             const newBgUrl = `hour_${hourToShow}.png`;
             const img = new Image();
-            img.onload = () => { bgImageEl.src = newBgUrl; };
-            img.onerror = () => { bgImageEl.src = defaultBackground; };
+            img.onload = () => { 
+                bgImageEl.src = newBgUrl;
+                centerBackgroundImage();
+            };
+            img.onerror = () => { 
+                bgImageEl.src = defaultBackground;
+                centerBackgroundImage();
+            };
             img.src = newBgUrl;
 
             updateButtonStates();
