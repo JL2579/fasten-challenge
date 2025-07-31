@@ -15,7 +15,7 @@
             background-color: #111827; /* Fallback-Farbe */
             color: white;
             text-align: center;
-            overflow: hidden; /* Verhindert Scrollbalken am Body */
+            /* WICHTIG: overflow wird jetzt vom Container gesteuert, nicht vom body */
         }
         .background-container {
             position: fixed;
@@ -36,7 +36,9 @@
             transition: opacity 0.5s ease-in-out;
         }
         .content-wrapper {
-            position: relative;
+            position: fixed; /* ÄNDERUNG: Fixiert den Inhalt über dem Hintergrund */
+            top: 0;
+            left: 0;
             z-index: 2;
             display: flex;
             justify-content: center;
@@ -44,10 +46,12 @@
             min-height: 100vh;
             width: 100%;
             padding: 1rem;
+            pointer-events: none; /* ÄNDERUNG: Lässt Klicks/Scrollen zum Hintergrund durch */
         }
         .content {
             width: 100%;
             max-width: 640px; /* Maximale Breite für den Inhalt */
+            pointer-events: auto; /* ÄNDERUNG: Macht den Inhaltsblock wieder klickbar */
         }
         #countdown {
             font-family: 'Orbitron', sans-serif;
@@ -97,7 +101,7 @@
     <canvas class="fireworks-canvas"></canvas>
 
     <!-- Zurück-Button (Browser-Navigation) -->
-    <a href="#" onclick="history.back(); return false;" class="absolute top-4 left-4 z-10 text-white bg-black bg-opacity-30 p-2 rounded-lg hover:bg-opacity-50 transition-all">
+    <a href="#" onclick="history.back(); return false;" class="fixed top-4 left-4 z-10 text-white bg-black bg-opacity-30 p-2 rounded-lg hover:bg-opacity-50 transition-all">
         &larr; Zurück
     </a>
 
