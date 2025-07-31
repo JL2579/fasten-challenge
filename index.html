@@ -13,8 +13,7 @@
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #111827; /* Fallback-Farbe */
-            /* --- NEUER HINTERGRUND --- */
-            background-image: url('https://chatgpt.com/backend-api/public_content/enc/eyJpZCI6Im1fNjg4YTRmZDY2YmJjODE5MTk4MzNjZjc2NzA5NTc0ZjQ6ZmlsZV8wMDAwMDAwMDIxYjQ2MjQ2YmIzNzVlNGVhYTUyNzJmMyIsInRzIjoiNDg3MTkzIiwicCI6InB5aSIsInNpZyI6IjM3OGMwNDQ0YTM2Y2MyYzgwMjQxM2E5ODU0MWJmMDVlN2UwNDM4Y2VlMzU0ODJmNDU2NDljYTk2OWIyNWNmZmUiLCJ2IjoiMCIsImdpem1vX2lkIjpudWxsfQ==');
+            background-image: url('default.png'); 
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -25,9 +24,10 @@
             color: white;
             text-align: center;
             overflow: hidden; /* Verhindert Scrollbalken */
+            transition: background-image 0.5s ease-in-out; /* Sanfter Übergang für Bildwechsel */
         }
         .overlay {
-            background-color: rgba(17, 24, 39, 0.5); /* Leichte Anpassung für Lesbarkeit */
+            background-color: rgba(17, 24, 39, 0.75);
             position: absolute;
             top: 0;
             left: 0;
@@ -39,6 +39,7 @@
             position: relative;
             z-index: 2;
             padding: 2rem;
+            width: 100%;
         }
         #countdown {
             font-family: 'Orbitron', sans-serif;
@@ -52,8 +53,11 @@
             }
         }
         #milestone {
-            min-height: 60px;
+            min-height: 120px; /* Etwas mehr Platz für längere Texte */
             transition: opacity 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .fireworks-canvas {
             position: absolute;
@@ -66,11 +70,15 @@
         }
         .button-container {
             position: relative;
-            z-index: 4; /* Stellt sicher, dass Buttons über dem Feuerwerk klickbar sind */
+            z-index: 4;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1rem;
+        }
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -78,30 +86,54 @@
     <div class="overlay"></div>
     <canvas class="fireworks-canvas"></canvas>
 
-    <div class="content">
-        <p class="text-lg md:text-xl text-gray-300 mb-8 mt-8">Verbleibende Zeit bis zum Ziel:</p>
+    <!-- Zurück-Button (Browser-Navigation) -->
+    <a href="#" onclick="history.back(); return false;" class="absolute top-4 left-4 z-10 text-white bg-black bg-opacity-30 p-2 rounded-lg hover:bg-opacity-50 transition-all">
+        &larr; Zurück
+    </a>
 
-        <div id="countdown" class="mb-8">
+    <div class="content">
+        <h1 class="text-3xl md:text-5xl text-white tracking-wider mb-4">
+            Arthurs <br> 
+            <span class="font-extrabold">5 Tages</span> <br> 
+            Fasten-Challenge
+        </h1>
+        <p class="text-lg md:text-xl text-gray-300 mb-4">Verbleibende Zeit bis zum Ziel:</p>
+
+        <div id="countdown" class="mb-4">
             <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
         </div>
 
-        <div id="milestone" class="p-4 bg-black bg-opacity-30 rounded-lg shadow-lg mb-8 max-w-md mx-auto">
+        <!-- Milestone Navigation -->
+        <div class="flex justify-center items-center gap-4 mb-4">
+            <button id="prevMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">&lt; Spruch zurück</button>
+            <button id="nextMilestoneButton" class="nav-button bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition">Spruch vor &gt;</button>
+        </div>
+
+        <div id="milestone" class="p-4 bg-black bg-opacity-40 rounded-lg shadow-lg mb-8 max-w-lg mx-auto">
             <p id="milestone-text" class="text-lg md:text-xl italic text-teal-300"></p>
         </div>
 
         <div class="button-container">
             <button id="resetButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 w-64">
-                Ich bin schwach geworden
+                Ich bin schwach geworden!
             </button>
-            <!-- Test Buttons -->
-       
+            <!-- Test Buttons (können später entfernt werden) -->
+            <!--<div class="flex gap-4 mt-4">
+                 <button id="testFireworksButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Feuerwerk testen
+                </button>
+                <button id="stopFireworksButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                    Feuerwerk stoppen
+                </button>
+            </div>-->
         </div>
     </div>
 
     <script>
         // --- KONFIGURATION ---
-        const challengeDurationHours = 120; // 5 Tage * 24 Stunden
-        const initialStartDate = new Date('2025-07-28T22:00:00');
+        const challengeDurationHours = 120;
+        const initialStartDate = new Date('2025-07-28T18:00:00');
+        const defaultBackground = 'default.png'; 
 
         const milestones = {
             1: "Stunde 1: Der Startschuss ist gefallen! Du hast eine Entscheidung getroffen, die Willenskraft erfordert und dich transformieren wird. Jeder große Weg beginnt mit einem ersten, mutigen Schritt – du hast ihn gerade gemacht.",
@@ -226,7 +258,6 @@
             120: "GESCHAFFT! 120 Stunden pure Willenskraft! Du bist eine Legende! Zeit, das Feuerwerk zu zünden und deinen unglaublichen Erfolg zu feiern!"
         };
 
-
         // --- DOM-ELEMENTE ---
         const hoursEl = document.getElementById('hours');
         const minutesEl = document.getElementById('minutes');
@@ -236,12 +267,16 @@
         const fireworksCanvas = document.querySelector('.fireworks-canvas');
         //const testFireworksButton = document.getElementById('testFireworksButton');
         //const stopFireworksButton = document.getElementById('stopFireworksButton');
-
+        const bodyEl = document.body;
+        const prevMilestoneButton = document.getElementById('prevMilestoneButton');
+        const nextMilestoneButton = document.getElementById('nextMilestoneButton');
 
         // --- VARIABLEN ---
         let countdownInterval;
         let endDate;
         let fireworks;
+        let currentMaxHour = 0; // Die höchste bisher erreichte Stunde
+        let manualViewHour = 0; // Die Stunde, die manuell angezeigt wird
 
         // --- FUNKTIONEN ---
         function startCountdown(startDate) {
@@ -250,8 +285,15 @@
             
             endDate = new Date(startDate.getTime() + challengeDurationHours * 60 * 60 * 1000);
 
+            // Initialen Zustand setzen
+            const initialHoursPassed = Math.floor((new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60));
+            currentMaxHour = Math.max(0, initialHoursPassed); // Sicherstellen, dass es nicht negativ ist
+            manualViewHour = currentMaxHour;
+
+            updateDisplayForHour(manualViewHour);
+            
             countdownInterval = setInterval(() => updateCountdown(startDate), 1000);
-            updateCountdown(startDate);
+            updateCountdown(startDate); // Sofortiger erster Aufruf für den Timer
         }
 
         function updateCountdown(startDate) {
@@ -263,89 +305,96 @@
                 hoursEl.textContent = '00';
                 minutesEl.textContent = '00';
                 secondsEl.textContent = '00';
-                milestoneTextEl.textContent = milestones[120];
+                updateDisplayForHour(120);
                 launchFireworks();
                 return;
             }
 
+            // Timer aktualisieren
             const hours = Math.floor(timeLeft / (1000 * 60 * 60));
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
             hoursEl.textContent = String(hours).padStart(2, '0');
             minutesEl.textContent = String(minutes).padStart(2, '0');
             secondsEl.textContent = String(seconds).padStart(2, '0');
 
-            checkMilestones(startDate);
-        }
-
-        function checkMilestones(startDate) {
-            const now = new Date();
-            const hoursPassed = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
-            
-            let latestMilestone = "";
-            for (const hour in milestones) {
-                if (hoursPassed >= hour) {
-                     latestMilestone = milestones[hour];
+            // Maximale erreichbare Stunde aktualisieren
+            const newMaxHour = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+            if (newMaxHour > currentMaxHour) {
+                currentMaxHour = newMaxHour;
+                // Wenn der Benutzer live schaut, automatisch aktualisieren
+                if (manualViewHour === currentMaxHour - 1) {
+                    manualViewHour = currentMaxHour;
+                    updateDisplayForHour(manualViewHour);
+                } else {
+                    // Nur die Button-Zustände aktualisieren
+                    updateButtonStates();
                 }
             }
+        }
 
-            if (milestoneTextEl.textContent !== latestMilestone) {
+        function updateDisplayForHour(hourToShow) {
+            // Meilenstein-Text aktualisieren
+            let milestoneText = milestones[hourToShow] || "Der Weg ist das Ziel...";
+            if (milestoneTextEl.textContent !== milestoneText) {
                  milestoneTextEl.parentElement.style.opacity = 0;
                  setTimeout(() => {
-                    milestoneTextEl.textContent = latestMilestone;
+                    milestoneTextEl.textContent = milestoneText;
                     milestoneTextEl.parentElement.style.opacity = 1;
-                 }, 500);
+                 }, 300);
             }
+
+            // Hintergrundbild aktualisieren
+            const newBgUrl = `hour_${hourToShow}.png`;
+            const img = new Image();
+            img.onload = () => { bodyEl.style.backgroundImage = `url('${newBgUrl}')`; };
+            img.onerror = () => { bodyEl.style.backgroundImage = `url('${defaultBackground}')`; };
+            img.src = newBgUrl;
+
+            updateButtonStates();
+        }
+        
+        function updateButtonStates() {
+            prevMilestoneButton.disabled = manualViewHour <= 1;
+            nextMilestoneButton.disabled = manualViewHour >= currentMaxHour;
         }
 
         function launchFireworks() {
-            // FIX: The library exposes the constructor on the `Fireworks` property of the global object.
             if (!fireworks && window.Fireworks) {
                 fireworks = new window.Fireworks.Fireworks(fireworksCanvas, {
-                    autoresize: true,
-                    opacity: 0.5,
-                    acceleration: 1.02,
-                    friction: 0.97,
-                    gravity: 1.5,
-                    particles: 175,
-                    traceSpeed: 3,
-                    explosion: 5,
-                    intensity: 70,
-                    flickering: 50,
-                    lineStyle: 'round',
-                    hue: { min: 0, max: 360 },
-                    delay: { min: 30, max: 60 },
-                    rocketsPoint: { min: 50, max: 50 },
-                    lineWidth: { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } },
-                    brightness: { min: 50, max: 80 },
-                    decay: { min: 0.015, max: 0.03 },
-                    mouse: { click: false, move: false, max: 1 }
+                    autoresize: true, opacity: 0.5, acceleration: 1.05, friction: 0.97, gravity: 1.5, particles: 75, traceSpeed: 3, explosion: 5, intensity: 30, flickering: 50, lineStyle: 'round', hue: { min: 0, max: 360 }, delay: { min: 30, max: 60 }, rocketsPoint: { min: 50, max: 50 }, lineWidth: { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } }, brightness: { min: 50, max: 80 }, decay: { min: 0.015, max: 0.03 }, mouse: { click: false, move: false, max: 1 }
                 });
             }
-            if(fireworks) {
-                fireworks.start();
-            }
+            if(fireworks) fireworks.start();
         }
 
         function stopFireworks() {
-            if (fireworks) {
-                fireworks.stop();
-            }
+            if (fireworks) fireworks.stop();
         }
 
         // --- EVENT LISTENER ---
         resetButton.addEventListener('click', () => {
             const newStartDate = new Date();
             startCountdown(newStartDate);
-            // Anstelle von alert() könnte man eine schönere Modal-Box bauen.
-            // Für die Einfachheit belassen wir es bei alert().
             alert("Der Countdown wurde zurückgesetzt. Die 120 Stunden beginnen jetzt von Neuem. Auf ein Neues!");
         });
 
-        //testFireworksButton.addEventListener('click', launchFireworks);
-        //stopFireworksButton.addEventListener('click', stopFireworks);
+        prevMilestoneButton.addEventListener('click', () => {
+            if (manualViewHour > 1) {
+                manualViewHour--;
+                updateDisplayForHour(manualViewHour);
+            }
+        });
 
+        nextMilestoneButton.addEventListener('click', () => {
+            if (manualViewHour < currentMaxHour) {
+                manualViewHour++;
+                updateDisplayForHour(manualViewHour);
+            }
+        });
+
+        // testFireworksButton.addEventListener('click', launchFireworks);
+        // stopFireworksButton.addEventListener('click', stopFireworks);
 
         // --- INITIALISIERUNG ---
         startCountdown(initialStartDate);
