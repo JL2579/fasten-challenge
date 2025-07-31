@@ -24,19 +24,21 @@
             width: 100vw;
             height: 100vh;
             z-index: 0;
-            overflow-x: auto; /* Ermöglicht horizontales Scrollen */
-            overflow-y: hidden;
+            overflow: auto; /* ÄNDERUNG: Ermöglicht Scrollen in beide Richtungen */
             -webkit-overflow-scrolling: touch; /* Für flüssiges Scrollen auf iOS */
+            display: flex; /* Hilft bei der Zentrierung, falls das Bild kleiner als der Viewport ist */
         }
         #bgImage {
-            height: 100vh; /* Bild füllt die Höhe des Bildschirms */
-            width: auto;   /* Breite passt sich proportional an */
-            max-width: none; /* WICHTIG: Verhindert, dass das Bild gestaucht wird */
-            min-width: 100vw; /* Stellt sicher, dass das Bild mindestens so breit wie der Bildschirm ist */
+            /* ÄNDERUNG: Diese Logik stellt sicher, dass das Bild den Viewport immer abdeckt (wie background-size: cover) */
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            margin: auto; /* Zentriert das Bild im Flex-Container */
             transition: opacity 0.5s ease-in-out;
         }
         .content-wrapper {
-            position: fixed; /* ÄNDERUNG: Fixiert den Inhalt über dem Hintergrund */
+            position: fixed;
             top: 0;
             left: 0;
             z-index: 2;
@@ -46,26 +48,26 @@
             min-height: 100vh;
             width: 100%;
             padding: 1rem;
-            pointer-events: none; /* ÄNDERUNG: Lässt Klicks/Scrollen zum Hintergrund durch */
+            pointer-events: none;
         }
         .content {
             width: 100%;
             max-width: 512px; /* Maximale Breite für den Inhalt */
-            pointer-events: auto; /* ÄNDERUNG: Macht den Inhaltsblock wieder klickbar */
+            pointer-events: auto; /* Macht den Inhaltsblock wieder klickbar */
         }
         #countdown {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.4rem; /* ÄNDERUNG: Verkleinert (war 3rem) */
+            font-size: 2.4rem;
             letter-spacing: 0.1em;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
         }
         @media (min-width: 768px) {
             #countdown {
-                font-size: 4.8rem; /* ÄNDERUNG: Verkleinert (war 6rem) */
+                font-size: 4.8rem;
             }
         }
         #milestone {
-            min-height: 120px; /* Etwas mehr Platz für längere Texte */
+            min-height: 120px;
             transition: opacity 0.5s ease-in-out;
             display: flex;
             align-items: center;
@@ -341,8 +343,10 @@
         function centerBackgroundImage() {
             // Kurze Verzögerung, um sicherzustellen, dass das Rendering abgeschlossen ist
             setTimeout(() => {
-                const scrollPos = (bgImageEl.scrollWidth - backgroundContainer.clientWidth) / 2;
-                backgroundContainer.scrollLeft = scrollPos;
+                const scrollLeftPos = (backgroundContainer.scrollWidth - backgroundContainer.clientWidth) / 2;
+                const scrollTopPos = (backgroundContainer.scrollHeight - backgroundContainer.clientHeight) / 2;
+                backgroundContainer.scrollLeft = scrollLeftPos;
+                backgroundContainer.scrollTop = scrollTopPos;
             }, 50);
         }
 
